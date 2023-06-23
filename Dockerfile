@@ -1,24 +1,20 @@
-# pull official base image
-FROM python:3.8.1-alpine
+# Base image
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
-# set work directory
-WORKDIR /src
+# Set the working directory
+WORKDIR /app
 
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Copy the requirements file
+COPY requirements.txt .
 
-# copy requirements file
-COPY ./requirements.txt /src/requirements.txt
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# install dependencies
-RUN set -eux \
-    && apk add --no-cache --virtual .build-deps build-base \
-    libressl-dev libffi-dev gcc musl-dev python3-dev \
-    postgresql-dev \
-    && pip install --upgrade pip setuptools wheel \
-    && pip install -r /src/requirements.txt \
-    && rm -rf /root/.cache/pip
+# Copy the source code
+COPY ./app .
 
-# copy project
-COPY . /src/
+# Expose the port
+EXPOSE 80
+
+# Command to run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
